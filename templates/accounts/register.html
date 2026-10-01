@@ -1,0 +1,176 @@
+{% extends 'base.html' %} <!-- Adjust or remove if you don't use a base layout -->
+
+{% block content %}
+<div class="container my-5 py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            
+            <!-- Registration Card (Light Background) -->
+            <div class="card bg-white border-0 shadow-lg rounded-3">
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <a class="navbar-brand fw-bold fs-3 text-dark text-decoration-none" href="#">
+                            Nothing<span class="text-primary">Hub</span>
+                        </a>
+                        <h4 class="mt-2 fw-semibold text-dark">Create an Account</h4>
+                        <p class="text-muted small">Join us today! Please fill in your details below.</p>
+                    </div>
+
+                    <!-- Non-Field Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            {% for error in form.non_field_errors %}
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+
+                    <!-- Form Start -->
+                    <form method="POST" action="{% url 'register' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <!-- First Name & Last Name Row -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label text-dark small fw-bold">First Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-person"></i></span>
+                                    <input 
+                                        type="text" 
+                                        name="{{ form.first_name.name }}" 
+                                        id="{{ form.first_name.id_for_label }}" 
+                                        class="form-control border-secondary-subtle {% if form.first_name.errors %}is-invalid{% endif %}" 
+                                        placeholder="John"
+                                        value="{{ form.first_name.value|default_if_none:'' }}"
+                                        required
+                                    >
+                                </div>
+                                {% for error in form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label text-dark small fw-bold">Last Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-person"></i></span>
+                                    <input 
+                                        type="text" 
+                                        name="{{ form.last_name.name }}" 
+                                        id="{{ form.last_name.id_for_label }}" 
+                                        class="form-control border-secondary-subtle {% if form.last_name.errors %}is-invalid{% endif %}" 
+                                        placeholder="Doe"
+                                        value="{{ form.last_name.value|default_if_none:'' }}"
+                                        required
+                                    >
+                                </div>
+                                {% for error in form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label text-dark small fw-bold">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-at"></i></span>
+                                <input 
+                                    type="text" 
+                                    name="{{ form.username.name }}" 
+                                    id="{{ form.username.id_for_label }}" 
+                                    class="form-control border-secondary-subtle {% if form.username.errors %}is-invalid{% endif %}" 
+                                    placeholder="johndoe"
+                                    value="{{ form.username.value|default_if_none:'' }}"
+                                    required
+                                >
+                            </div>
+                            {% for error in form.username.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label text-dark small fw-bold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-envelope"></i></span>
+                                <input 
+                                    type="email" 
+                                    name="{{ form.email.name }}" 
+                                    id="{{ form.email.id_for_label }}" 
+                                    class="form-control border-secondary-subtle {% if form.email.errors %}is-invalid{% endif %}" 
+                                    placeholder="john@example.com"
+                                    value="{{ form.email.value|default_if_none:'' }}"
+                                    required
+                                >
+                            </div>
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label text-dark small fw-bold">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-telephone"></i></span>
+                                <input 
+                                    type="tel" 
+                                    name="{{ form.phone_number.name }}" 
+                                    id="{{ form.phone_number.id_for_label }}" 
+                                    class="form-control border-secondary-subtle {% if form.phone_number.errors %}is-invalid{% endif %}" 
+                                    placeholder="+1 234 567 890"
+                                    value="{{ form.phone_number.value|default_if_none:'' }}"
+                                >
+                            </div>
+                            {% for error in form.phone_number.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="{{ form.password.id_for_label }}" class="form-label text-dark small fw-bold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-secondary-subtle text-secondary"><i class="bi bi-lock"></i></span>
+                                <input 
+                                    type="password" 
+                                    name="{{ form.password.name }}" 
+                                    id="{{ form.password.id_for_label }}" 
+                                    class="form-control border-secondary-subtle {% if form.password.errors %}is-invalid{% endif %}" 
+                                    placeholder="Enter your password"
+                                    required
+                                >
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit Button (Dark to match navbar style) -->
+                        <button type="submit" class="btn btn-dark w-100 fw-bold py-2 shadow-sm">
+                            <i class="bi bi-person-plus-fill me-2"></i>Register
+                        </button>
+
+                    </form>
+                    <!-- Form End -->
+
+                    <!-- Footer Link -->
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="text-muted small mb-0">
+                            Already have an account? 
+                            <a href="#" class="text-dark fw-bold text-decoration-none">Log in here</a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

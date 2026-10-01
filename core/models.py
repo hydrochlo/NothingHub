@@ -16,14 +16,6 @@ class UUIDModel(models.Model):
     class Meta:
         abstract = True
 
-# 3. Soft Delete Base Model (Optional: to hide items without actually deleting from DB)
-class SoftDeleteModel(models.Model):
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        abstract = True
-
 # 4. Global Store Settings (Concrete Model - creates actual table)
 class StoreSetting(TimeStampedModel):
     site_name = models.CharField(max_length=100, default="NothigHub")
