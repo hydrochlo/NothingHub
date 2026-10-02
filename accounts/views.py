@@ -12,56 +12,14 @@ def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            # Get cleaned data from the form
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-
-            # Use your custom manager method to save the user
-            user = User.objects.create_user(
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-                email=email,
-                password=password
-            )
-            # Optional: set phone number or active status before saving
-            user.phone_number = form.cleaned_data['phone_number']
-            user.is_active = True  # Activate account immediately
+            user = form.save(commit=False)
+            user.is_active = True
             user.save()
-
             return redirect('login')
     else:
         form = RegistrationForm()
 
     return render(request, 'accounts/register.html', {'form': form})
-
-# def login_view(request):
-#     # Redirect user if already logged in
-#     if request.user.is_authenticated:
-#         return redirect('home')
-
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data.get('username')
-#             password = form.cleaned_data.get('password')
-
-#             # Authenticate user against model database
-#             user = authenticate(request, username=username, password=password)
-
-#             if user is not None:
-#                 # Log the user in (creates session)
-#                 auth_login(request, user)
-#                 return redirect('home')  # Change 'home' to your home URL name
-#             else:
-#                 messages.error(request, 'Invalid username or password.')
-#     else:
-#         form = LoginForm()
-
-#     return render(request, 'accounts/login.html', {'form': form})
 
 
 def login_view(request):

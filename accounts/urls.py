@@ -1,8 +1,49 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
+
 
 urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    
+    # Password Reset
+    # Step 1: Input Email Form
+    path(
+        'password-reset/', 
+        auth_views.PasswordResetView.as_view(
+            template_name='accounts/password_reset.html',
+            email_template_name='accounts/password_reset_email.html',
+            subject_template_name='accounts/password_reset_subject.txt'
+        ), 
+        name='password_reset'
+    ),
+    
+    # Step 2: Email Sent Confirmation
+    path(
+        'password-reset/done/', 
+        auth_views.PasswordResetDoneView.as_view(
+            template_name='accounts/password_reset_done.html'
+        ), 
+        name='password_reset_done'
+    ),
+    
+    # Step 3: Secret Token Link Handling (URL format strictly required by Django)
+    path(
+        'password-reset-confirm/<uidb64>/<token>/', 
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name='accounts/password_reset_confirm.html'
+        ), 
+        name='password_reset_confirm'
+    ),
+    
+    # Step 4: Password Change Success
+    path(
+        'password-reset-complete/', 
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name='accounts/password_reset_complete.html'
+        ), 
+        name='password_reset_complete'
+    ),
 ]
