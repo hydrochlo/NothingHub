@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # my apps
-    'accounts',
+    'accounts.apps.AccountsConfig',
     'cart',
     'core',
     'orders',
@@ -70,6 +70,14 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id':env('OAUTH_GOOGLE_CLIENT_ID'),
             'secret':env('OAUTH_GOOGLE_SECRET'),
         },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'prompt': 'consent',  # Forces Google to re-ask for email permission
+        },
     },
 }
 
@@ -84,11 +92,13 @@ LOGIN_REDIRECT_URL = "/"
 ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 ACCOUNT_LOGIN_REDIRECT_URL = "/"
 
-ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 
-# Automatically connect Google account to an existing user with the same email
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

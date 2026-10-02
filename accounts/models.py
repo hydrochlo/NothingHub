@@ -39,12 +39,12 @@ class UserManager(BaseUserManager):
         
         return user
     
-class User(AbstractBaseUser, TimeStampedModel):
+class User(AbstractBaseUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=50, unique=True)
-    phone_number = models.CharField(max_length=50)
+    # phone_number = models.CharField(max_length=50)
     
     # required
     joining_date = models.DateTimeField(auto_now_add=True)
@@ -67,3 +67,39 @@ class User(AbstractBaseUser, TimeStampedModel):
         return self.is_admin
     def has_module_perms(self, add_label):
         return True
+    
+    
+    
+class UserProfile(models.Model):
+    # Link to your custom User model
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(max_length=20, blank=True)
+    
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar_url = models.URLField(max_length=500, blank=True, null=True)  # To store Google OAuth photo link
+    
+    # Shipping Address
+    shipping_address_line1 = models.CharField(max_length=255, blank=True)
+    shipping_address_line2 = models.CharField(max_length=255, blank=True)
+    shipping_city = models.CharField(max_length=100, blank=True)
+    shipping_postal_code = models.CharField(max_length=20, blank=True)
+    shipping_country = models.CharField(max_length=100, blank=True)
+    
+    # Billing Address
+    billing_address_line1 = models.CharField(max_length=255, blank=True)
+    billing_address_line2 = models.CharField(max_length=255, blank=True)
+    billing_city = models.CharField(max_length=100, blank=True)
+    billing_postal_code = models.CharField(max_length=20, blank=True)
+    billing_country = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.email}"
+    
+    @property
+    def get_avatar_url(self):
+        """Helper to return local uploaded avatar, Google picture, or default placeholder."""
+        if self.avatar:
+            return self.avatar.url
+        if self.avatar_url:
+            return self.avatar_url
+        return '/static/images/avatar.jpg'
