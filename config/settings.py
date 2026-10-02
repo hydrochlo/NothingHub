@@ -11,6 +11,15 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+
+# Initialize environment variables
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+
+# Read .env file
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,8 +54,41 @@ INSTALLED_APPS = [
     'orders',
     'products', 
     'reviews',
+    
+    # connecting social apps 
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
+SITE_ID = 1
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google':{
+        'APP':{
+            'client_id':env('OAUTH_GOOGLE_CLIENT_ID'),
+            'secret':env('OAUTH_GOOGLE_SECRET'),
+        },
+    },
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Disable email verification requirements
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Redirect users to your homepage (or desired route) after login/signup
+LOGIN_REDIRECT_URL = "/" 
+ACCOUNT_SIGNUP_REDIRECT_URL = "/"
+ACCOUNT_LOGIN_REDIRECT_URL = "/"
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+
+# Automatically connect Google account to an existing user with the same email
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,6 +97,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -144,3 +188,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # My Custom UserManager
 AUTH_USER_MODEL = 'accounts.User'
+AUTHENTICATION_BACKENDS = [
+    # Needed to log in by username/email in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail or social accounts
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
