@@ -22,3 +22,15 @@ class Category(models.Model):
             self.category_slug = slugify(self.category_name)
         return super().save(*args, **kwargs)
 
+class Product(models.Model):
+    product_title = models.CharField(max_length=200, unique=True)
+    product_slug = models.SlugField(max_length=200, unique=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    product_description = models.TextField(blank=True)
+    product_price = models.FloatField()
+    product_discount_price = models.FloatField()
+    product_stock = models.IntegerField()
+    product_is_available = models.BooleanField(default=False)
+    
+    def __str__(self):
+            return self.product_title
