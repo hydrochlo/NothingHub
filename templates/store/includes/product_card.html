@@ -1,0 +1,132 @@
+<div class="col-12 col-sm-6 col-md-4 col-lg-3">
+    <div class="card h-100 w-100 border-0 shadow-sm rounded-4 product-card position-relative overflow-hidden">
+        
+        <!-- Full-Bleed Image Container -->
+        <div class="position-relative overflow-hidden bg-light rounded-top-4 card-img-wrapper">
+            
+            <!-- Sale/Discount Badge -->
+            {% if product.product_is_available and product.product_discount_price %}
+                <span class="position-absolute top-0 start-0 z-2 badge bg-danger rounded-pill px-2 py-1 fw-bold shadow-sm"
+                      style="top: 10px; left: 10px;">
+                    SALE
+                </span>
+            {% endif %}
+
+            <!-- Wishlist Button -->
+            <button type="button"
+                    class="position-absolute top-0 end-0 z-2 btn btn-light btn-sm rounded-circle shadow-sm border-0 d-flex align-items-center justify-content-center p-0"
+                    style="top: 10px; right: 10px; width: 32px; height: 32px;"
+                    aria-label="Add to Wishlist">
+                <i class="bi bi-heart text-secondary fs-6"></i>
+            </button>
+
+            <!-- Product Images -->
+            <a href="{% url 'product_list' %}" class="d-block text-decoration-none p-0 m-0">
+                {% with images=product.images.all %}
+                    {% if images.0 %}
+                        <img 
+                            src="{{ images.0.image.url }}" 
+                            class="card-img-top w-100 product-img primary-img" 
+                            alt="{{ product.product_title }}"
+                            loading="lazy"
+                            style="height: 200px; object-fit: cover;"
+                        >
+
+                        {% if images.1 %}
+                            <img 
+                                src="{{ images.1.image.url }}" 
+                                class="card-img-top w-100 product-img secondary-img" 
+                                alt="{{ product.product_title }}"
+                                loading="lazy"
+                                style="height: 200px; object-fit: cover;"
+                            >
+                        {% endif %}
+
+                    {% else %}
+                        <img 
+                            src="https://via.placeholder.com/400x300?text=No+Image" 
+                            class="card-img-top w-100 product-img primary-img" 
+                            alt="No Image"
+                            style="height: 200px; object-fit: cover;"
+                        >
+                    {% endif %}
+                {% endwith %}
+            </a>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body d-flex flex-column p-3">
+            
+            <!-- Category & Stock -->
+            <div class="d-flex align-items-center justify-content-between mb-2 gap-2">
+                
+                <small class="text-muted text-uppercase fw-bold text-truncate"
+                       style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                    {{ product.category.category_name }}
+                </small>
+
+                {% if product.product_stock > 10 %}
+                    <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fw-semibold">
+                        <i class="bi bi-circle-fill me-1"
+                           style="font-size: 0.4rem; vertical-align: middle;"></i>
+                        In Stock
+                    </span>
+
+                {% elif product.product_stock > 0 %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1 fw-semibold">
+                        Low Stock ({{ product.product_stock }})
+                    </span>
+
+                {% else %}
+                    <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fw-semibold">
+                        Out of Stock
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Product Title -->
+            <h6 class="card-title fw-bold text-dark mb-3 text-truncate"
+                title="{{ product.product_title }}">
+                <a href="{% url 'product_list' %}"
+                   class="text-decoration-none text-dark hover-title">
+                    {{ product.product_title }}
+                </a>
+            </h6>
+
+            <!-- Price & Action -->
+            <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
+                
+                <div class="d-flex align-items-baseline gap-1">
+                    {% if product.product_is_available and product.product_discount_price %}
+                        <span class="fs-5 fw-bold text-dark">
+                            ${{ product.product_discount_price }}
+                        </span>
+
+                        <span class="text-muted text-decoration-line-through fs-7">
+                            ${{ product.product_price }}
+                        </span>
+                    {% else %}
+                        <span class="fs-5 fw-bold text-dark">
+                            ${{ product.product_price }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if product.product_stock > 0 %}
+                    <button type="button"
+                            class="btn btn-primary btn-sm rounded-pill px-3 fw-medium shadow-sm">
+                        Add
+                    </button>
+                {% else %}
+                    <button type="button"
+                            class="btn btn-light text-muted btn-sm rounded-pill px-3 fw-medium"
+                            disabled>
+                        Sold Out
+                    </button>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>

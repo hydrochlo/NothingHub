@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'cart',
     'core',
     'orders',
-    'products', 
+    'store', 
     'reviews',
     
     # connecting social apps 

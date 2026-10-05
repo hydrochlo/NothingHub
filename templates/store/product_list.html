@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load param_tags %}
+
+
+{% block extra_css %}
+<style>
+    /* Product Card */
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    /* Title hover */
+    .hover-title {
+        transition: color 0.2s ease;
+    }
+
+    .product-card:hover .hover-title {
+        color: #0d6efd !important;
+    }
+
+    /* Small font */
+    .fs-7 {
+        font-size: 0.75rem;
+    }
+
+    /* Product image */
+    .product-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease, opacity 0.3s ease;
+    }
+
+    /* Image zoom */
+    .product-card:hover .product-img {
+        transform: scale(1.05);
+    }
+
+    /* Secondary image */
+    .secondary-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    }
+
+    .product-card:hover .secondary-img {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Filter & Search Toolbar (Steps 1, 2, 3) -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-light">
+        <form method="GET" action="{% url 'product_list' %}" class="row g-3 align-items-center">
+            
+            <!-- Step 1: Search Input -->
+            <div class="col-12 col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control bg-white border-start-0" 
+                           placeholder="Search products..." value="{{ request.GET.q }}">
+                </div>
+            </div>
+
+            <!-- Step 2: Category Filter -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.category_name }} ({{ cat.total_products }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Step 3: Sorting Control -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <select name="sort" class="form-select">
+                    <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Newest Arrivals</option>
+                    <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                </select>
+            </div>
+
+            <!-- Filter Trigger & Reset -->
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 fw-medium">
+                    Filter
+                </button>
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+
+            <!-- Step 2 (Continued): Price Bounds & In-Stock Toggle -->
+            <div class="col-12 border-top pt-3 d-flex flex-wrap gap-3 align-items-center fs-7">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="fw-bold text-secondary">Price ($):</label>
+                    <input type="number" step="0.01" name="min_price" class="form-control form-control-sm" style="width: 90px;" 
+                           placeholder="Min" value="{{ request.GET.min_price }}">
+                    <span>-</span>
+                    <input type="number" step="0.01" name="max_price" class="form-control form-control-sm" style="width: 90px;" 
+                           placeholder="Max" value="{{ request.GET.max_price }}">
+                </div>
+
+                <div class="form-check form-switch ms-md-3">
+                    <input class="form-check-input" type="checkbox" name="in_stock" value="true" id="inStockCheck" 
+                           {% if request.GET.in_stock == 'true' %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold" for="inStockCheck">In Stock Only</label>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products %}
+            {% include 'store/includes/product_card.html' with product=product %}
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-box-seam fs-1 text-muted"></i>
+                <p class="mt-2 text-muted">No products found matching your search criteria.</p>
+                <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Clear Filters</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Step 4: Pagination Navigation Preserving Query Parameters -->
+    {% if is_paginated %}
+        <nav class="mt-5 d-flex justify-content-center">
+            <ul class="pagination pagination-md">
+                
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% url_replace page=page_obj.previous_page_number %}" aria-label="Previous">
+                            &laquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% url_replace page=num %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% url_replace page=page_obj.next_page_number %}" aria-label="Next">
+                            &raquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    {% endif %}
+
+</div>
+{% endblock %}
