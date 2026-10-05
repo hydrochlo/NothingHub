@@ -16,7 +16,7 @@ class Category(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     category_image = models.ImageField(upload_to='category_images/')
-    
+
     class Meta:
         verbose_name = "category"
         verbose_name_plural = "categories"
@@ -24,7 +24,7 @@ class Category(models.Model):
             models.Index(fields=["id", "category_slug"], name="idx_id_slug_category"),
             models.Index(fields=["created_at"], name="idx_created_at_category"),
         ]
-    
+ 
     def __str__(self):
         return self.category_name
 
@@ -49,8 +49,6 @@ class Product(models.Model):
     
     def __str__(self):
         return self.product_title
-
-    
 
 
 class ProductImage(models.Model):

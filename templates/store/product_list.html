@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 {% load param_tags %}
 
-
 {% block extra_css %}
 <style>
+    /* Prevent body overflow-x from breaking CSS sticky */
+    html, body {
+        overflow-x: clip !important;
+    }
+
     /* Product Card */
     .product-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -53,129 +57,223 @@
     .product-card:hover .secondary-img {
         opacity: 1;
     }
+
+    /* ========================================================
+       STICKY SIDEBAR FIX (Prevents overlapping the top navbar)
+       ======================================================== */
+    @media (min-width: 992px) {
+        .filter-sidebar-sticky {
+            position: sticky !important;
+            top: 100px !important; /* Distance below navbar. Increase if navbar is taller */
+            z-index: 1000 !important; /* LOWER than navbar z-index (1030) so navbar stays on top */
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            transform: none !important; /* Resets offcanvas slide transform on desktop */
+        }
+    }
+
+    /* ========================================================
+       STRICT GRID RESPONSIVENESS OVERRIDES
+       Forces 3 cards per row below 1460px
+       ======================================================== */
+    .product-grid-row > * {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+    }
+
+    @media (min-width: 576px) {
+        .product-grid-row > * {
+            width: 50% !important;
+        }
+    }
+
+    /* Medium to Large screens (768px up to 1459px): STRICTLY 3 products per row */
+    @media (min-width: 768px) {
+        .product-grid-row > * {
+            width: 33.33333333% !important;
+        }
+    }
+
+    /* Extra large screens (1460px and above): 4 products per row */
+    @media (min-width: 1460px) {
+        .product-grid-row > * {
+            width: 25% !important;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-    <!-- Filter & Search Toolbar (Steps 1, 2, 3) -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-light">
-        <form method="GET" action="{% url 'product_list' %}" class="row g-3 align-items-center">
+    <!-- Mobile Filter Trigger Button (Visible only on screens < lg) -->
+    <div class="d-lg-none mb-3">
+        <button class="btn btn-outline-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm" 
+                type="button" 
+                data-bs-toggle="offcanvas" 
+                data-bs-target="#filterSidebar" 
+                aria-controls="filterSidebar">
+            <i class="bi bi-funnel-fill"></i> Show Filters & Search
+        </button>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left Sidebar Container -->
+        <div class="col-12 col-lg-3">
             
-            <!-- Step 1: Search Input -->
-            <div class="col-12 col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control bg-white border-start-0" 
-                           placeholder="Search products..." value="{{ request.GET.q }}">
-                </div>
-            </div>
-
-            <!-- Step 2: Category Filter -->
-            <div class="col-12 col-sm-6 col-md-3">
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
-                            {{ cat.category_name }} ({{ cat.total_products }})
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Step 3: Sorting Control -->
-            <div class="col-12 col-sm-6 col-md-3">
-                <select name="sort" class="form-select">
-                    <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Newest Arrivals</option>
-                    <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
-                    <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
-                    <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Popularity</option>
-                </select>
-            </div>
-
-            <!-- Filter Trigger & Reset -->
-            <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100 fw-medium">
-                    Filter
-                </button>
-                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary" title="Reset Filters">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                </a>
-            </div>
-
-            <!-- Step 2 (Continued): Price Bounds & In-Stock Toggle -->
-            <div class="col-12 border-top pt-3 d-flex flex-wrap gap-3 align-items-center fs-7">
-                <div class="d-flex align-items-center gap-2">
-                    <label class="fw-bold text-secondary">Price ($):</label>
-                    <input type="number" step="0.01" name="min_price" class="form-control form-control-sm" style="width: 90px;" 
-                           placeholder="Min" value="{{ request.GET.min_price }}">
-                    <span>-</span>
-                    <input type="number" step="0.01" name="max_price" class="form-control form-control-sm" style="width: 90px;" 
-                           placeholder="Max" value="{{ request.GET.max_price }}">
-                </div>
-
-                <div class="form-check form-switch ms-md-3">
-                    <input class="form-check-input" type="checkbox" name="in_stock" value="true" id="inStockCheck" 
-                           {% if request.GET.in_stock == 'true' %}checked{% endif %}>
-                    <label class="form-check-label fw-semibold" for="inStockCheck">In Stock Only</label>
-                </div>
-            </div>
-
-        </form>
-    </div>
-
-    <!-- Product Grid -->
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        {% for product in products %}
-            {% include 'store/includes/product_card.html' with product=product %}
-        {% empty %}
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-box-seam fs-1 text-muted"></i>
-                <p class="mt-2 text-muted">No products found matching your search criteria.</p>
-                <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Clear Filters</a>
-            </div>
-        {% endfor %}
-    </div>
-
-    <!-- Step 4: Pagination Navigation Preserving Query Parameters -->
-    {% if is_paginated %}
-        <nav class="mt-5 d-flex justify-content-center">
-            <ul class="pagination pagination-md">
+            <!-- Responsive Offcanvas: Drawer on mobile, Sticky Sidebar on desktop -->
+            <div class="offcanvas-lg offcanvas-start card border-0 shadow-sm rounded-4 bg-light filter-sidebar-sticky" 
+                 tabindex="-1" 
+                 id="filterSidebar" 
+                 aria-labelledby="filterSidebarLabel">
                 
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?{% url_replace page=page_obj.previous_page_number %}" aria-label="Previous">
-                            &laquo;
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-                {% endif %}
+                <!-- Offcanvas Header (Mobile Drawer Only) -->
+                <div class="offcanvas-header border-bottom d-lg-none">
+                    <h5 class="offcanvas-title fw-bold" id="filterSidebarLabel">
+                        <i class="bi bi-funnel me-1"></i> Filters
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterSidebar" aria-label="Close"></button>
+                </div>
 
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li class="page-item">
-                            <a class="page-link" href="?{% url_replace page=num %}">{{ num }}</a>
-                        </li>
-                    {% endif %}
+                <!-- Filter Form Body -->
+                <div class="offcanvas-body d-block p-3">
+                    <div class="d-none d-lg-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h5 class="fw-bold m-0"><i class="bi bi-funnel me-1"></i> Filters</h5>
+                        <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    </div>
+
+                    <form method="GET" action="{% url 'product_list' %}">
+                        
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">Search</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                <input type="text" name="q" class="form-control bg-white border-start-0" 
+                                       placeholder="Search products..." value="{{ request.GET.q }}">
+                            </div>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ cat.category_name }} ({{ cat.total_products }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Sorting Control -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">Sort By</label>
+                            <select name="sort" class="form-select">
+                                <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Newest Arrivals</option>
+                                <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Bounds -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">Price Range ($)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" step="0.01" name="min_price" class="form-control form-control-sm" 
+                                       placeholder="Min" value="{{ request.GET.min_price }}">
+                                <span>-</span>
+                                <input type="number" step="0.01" name="max_price" class="form-control form-control-sm" 
+                                       placeholder="Max" value="{{ request.GET.max_price }}">
+                            </div>
+                        </div>
+
+                        <!-- In-Stock Toggle -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="in_stock" value="true" id="inStockCheck" 
+                                       {% if request.GET.in_stock == 'true' %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold fs-7" for="inStockCheck">In Stock Only</label>
+                            </div>
+                        </div>
+
+                        <!-- Filter Action Buttons -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary fw-medium">
+                                Apply Filters
+                            </button>
+                            <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary d-lg-none text-center">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content: Product Grid & Pagination -->
+        <div class="col-12 col-lg-9">
+            
+            <!-- Product Grid -->
+            <div class="row product-grid-row g-4">
+                {% for product in products %}
+                    {% include 'store/includes/product_card.html' with product=product %}
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-box-seam fs-1 text-muted"></i>
+                        <p class="mt-2 text-muted">No products found matching your search criteria.</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Clear Filters</a>
+                    </div>
                 {% endfor %}
+            </div>
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?{% url_replace page=page_obj.next_page_number %}" aria-label="Next">
-                            &raquo;
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-                {% endif %}
+            <!-- Pagination Navigation Preserving Query Parameters -->
+            {% if is_paginated %}
+                <nav class="mt-5 d-flex justify-content-center">
+                    <ul class="pagination pagination-md">
+                        
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% url_replace page=page_obj.previous_page_number %}" aria-label="Previous">
+                                    &laquo;
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
 
-            </ul>
-        </nav>
-    {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% url_replace page=num %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
 
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% url_replace page=page_obj.next_page_number %}" aria-label="Next">
+                                    &raquo;
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            {% endif %}
+
+        </div>
+
+    </div>
 </div>
 {% endblock %}
