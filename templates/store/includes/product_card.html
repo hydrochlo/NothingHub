@@ -21,7 +21,7 @@
             </button>
 
             <!-- Product Images -->
-            <a href="{% url 'product_list' %}" class="d-block text-decoration-none p-0 m-0">
+            <a href="{% url 'product_detail' product.category.category_slug product.product_slug %}" class="d-block text-decoration-none p-0 m-0">
                 {% with images=product.images.all %}
                     {% if images.0 %}
                         <img 

@@ -1,6 +1,7 @@
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.db.models import Count, Q
 from .models import Category, Product
+from django.shortcuts import get_object_or_404
 
 class ProductListView(ListView):
     model = Product
@@ -59,3 +60,21 @@ class ProductListView(ListView):
             total_products=Count("products", filter=Q(products__product_is_available=True))
         )
         return context
+    
+    
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "store/product_detail.html"
+    context_object_name = "product"
+    
+    def get_object(self, queryset = None):
+        category_slug = self.kwargs.get("category_slug")
+        product_slug = self.kwargs.get("product_slug")
+        
+        return get_object_or_404(
+            Product,
+            category__category_slug = category_slug,
+            product_slug = product_slug 
+        )
+    
+    
