@@ -198,10 +198,14 @@
                 <hr class="my-4 text-secondary opacity-25">
 
                 <!-- Add to Cart Form -->
-                <form method="POST" action="#" class="mb-4">
+                <!-- Replace this: -->
+                <!-- <form method="POST" action="#" class="mb-4"> -->
+
+                <!-- With this: -->
+                <form method="POST" action="{% url 'cart_add' product.id %}" class="mb-4">
                     {% csrf_token %}
 
-                    <!-- Variant Selector -->
+                    
                     {% if product.variants.all %}
                     <div class="mb-3">
                         <label for="variantSelect"
@@ -234,13 +238,13 @@
                     </div>
                     {% endif %}
 
+                    <!-- Quantity Controls -->
                     <div class="row g-3 align-items-end">
-                        <!-- Quantity Controls -->
                         <div class="col-auto">
                             <label for="quantity" class="form-label fs-7 fw-semibold text-secondary d-block">Quantity</label>
                             <div class="input-group">
                                 <button type="button" class="btn btn-outline-secondary" onclick="decrementQty()">-</button>
-                                <input type="number" id="quantity" name="quantity" class="form-control qty-input fw-bold bg-white" value="1" min="1" max="1">
+                                <input type="number" id="quantity" name="quantity" class="form-control qty-input fw-bold bg-white" value="1" min="1">
                                 <button type="button" class="btn btn-outline-secondary" onclick="incrementQty()">+</button>
                             </div>
                         </div>
@@ -357,6 +361,26 @@
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
+
+    function incrementQty() {
+        const qtyInput = document.getElementById('quantity');
+        const maxStock = parseInt(qtyInput.getAttribute('max')) || 999;
+        let currentVal = parseInt(qtyInput.value) || 1;
+        
+        if (currentVal < maxStock) {
+            qtyInput.value = currentVal + 1;
+        }
+    }
+
+    function decrementQty() {
+        const qtyInput = document.getElementById('quantity');
+        let currentVal = parseInt(qtyInput.value) || 1;
+        
+        if (currentVal > 1) {
+            qtyInput.value = currentVal - 1;
+        }
+    }
+
     function updateVariantDetails(selectElement) {
 
     const selectedOption =

@@ -126,6 +126,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
+                'cart.context_processors.cart',
             ],
         },
     },
@@ -215,3 +217,5 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by e-mail or social accounts
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+CART_SESSION_ID = 'cart'

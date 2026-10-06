@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('', include('accounts.urls')),
     path('', include('store.urls')),
+    path('cart/', include('cart.urls')),
     
     # AllAuth
     path('accounts/', include('allauth.urls')),

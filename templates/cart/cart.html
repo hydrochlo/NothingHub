@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    html,
+    body {
+        overflow-x: clip !important;
+    }
+
+    .cart-product-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .cart-item {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cart-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .06);
+    }
+
+    .quantity-box {
+        width: 100px;
+    }
+
+    .fs-7 {
+        font-size: 0.75rem;
+    }
+
+    .summary-card {
+        position: sticky;
+        top: 90px;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb fs-7">
+
+            <li class="breadcrumb-item">
+                <a href="{% url 'product_list' %}"
+                   class="text-decoration-none text-secondary">
+
+                    <i class="bi bi-house me-1"></i>
+                    Home
+
+                </a>
+            </li>
+
+            <li class="breadcrumb-item active text-dark fw-semibold"
+                aria-current="page">
+
+                Shopping Cart
+
+            </li>
+
+        </ol>
+    </nav>
+
+
+    <!-- ========================= -->
+    <!-- Page Header -->
+    <!-- ========================= -->
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-4">
+
+        <div>
+
+            <h1 class="h2 fw-bold text-dark mb-1">
+                Shopping Cart
+            </h1>
+
+            <p class="text-secondary mb-0">
+                Review the products you've added to your cart.
+            </p>
+
+        </div>
+
+
+        <a href="{% url 'product_list' %}"
+           class="btn btn-outline-primary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Continue Shopping
+
+        </a>
+
+    </div>
+
+    <!-- Dynamic Cart Partial Container -->
+    {% include 'cart/partials/cart_content.html' %}
+
+</div>
+
+{% endblock %}
