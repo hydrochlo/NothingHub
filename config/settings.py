@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'orders',
     'store', 
     'reviews',
+    'wishlist',
     
     # connecting social apps 
     'allauth',
@@ -128,6 +129,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 
                 'cart.context_processors.cart',
+                'wishlist.context_processors.wishlist',
             ],
         },
     },

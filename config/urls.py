@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('', include('store.urls')),
     path('cart/', include('cart.urls')),
+    path('wishlist/', include('wishlist.urls')),
     
     # AllAuth
     path('accounts/', include('allauth.urls')),

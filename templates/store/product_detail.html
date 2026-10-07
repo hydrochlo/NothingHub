@@ -143,11 +143,14 @@
 
                     <!-- Wishlist Button -->
                     <button type="button" 
-                            class="btn btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-3 d-flex align-items-center justify-content-center p-0 border-0" 
-                            style="width: 38px; height: 38px;" 
-                            aria-label="Add to Wishlist">
-                        <i class="bi bi-heart text-secondary fs-6"></i>
+                            class="btn btn-outline-danger rounded-circle shadow-sm position-absolute top-0 end-0 m-3 d-flex align-items-center justify-content-center p-0 border-0 wishlist-toggle-btn {% if product.id in user_wishlist_ids %}active{% endif %}" 
+                            style="width: 38px; height: 38px; z-index: 10;" 
+                            aria-label="Add to Wishlist"
+                            data-product-id="{{ product.id }}"
+                            data-url="{% url 'wishlist:wishlist_toggle' product.id %}">
+                        <i class="bi {% if product.id in user_wishlist_ids %}bi-heart-fill text-danger{% else %}bi-heart text-secondary{% endif %} fs-6"></i>
                     </button>
+
                 </div>
             </div>
 
@@ -342,6 +345,59 @@
 {% endblock %}
 
 {% block extra_js %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Grab CSRF token directly from the form on the page
+  const getCsrfToken = () => {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+  };
+
+  document.querySelectorAll(".wishlist-toggle-btn").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Fallback to data-url or default path
+      const targetUrl = button.dataset.url || `/wishlist/toggle/${button.dataset.productId}/`;
+
+      try {
+        const response = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+
+        // Redirect if user is unauthenticated
+        if (response.status === 401 || response.redirected) {
+          window.location.href = "/accounts/login/";
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (data.status === "success") {
+          const icon = button.querySelector("i");
+          if (data.is_wishlisted) {
+            button.classList.add("active");
+            icon.classList.remove("bi-heart", "text-secondary");
+            icon.classList.add("bi-heart-fill", "text-danger");
+          } else {
+            button.classList.remove("active");
+            icon.classList.remove("bi-heart-fill", "text-danger");
+            icon.classList.add("bi-heart", "text-secondary");
+          }
+        }
+      } catch (err) {
+        console.error("Error toggling wishlist item:", err);
+      }
+    });
+  });
+});
+</script>
+
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
